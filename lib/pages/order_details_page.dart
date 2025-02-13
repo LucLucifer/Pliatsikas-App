@@ -39,6 +39,28 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
     _isCompleted = widget.isCompleted;
   }
 
+  String _formatQuantity(double quantity) {
+    // If it's a whole number, return without decimal
+    if (quantity == quantity.roundToDouble()) {
+      return quantity.toInt().toString();
+    }
+
+    // Convert to string and remove unnecessary trailing zeros
+    String formattedValue = quantity.toStringAsFixed(2);
+
+    // Remove trailing zeros after decimal
+    while (formattedValue.contains('.') && formattedValue.endsWith('0')) {
+      formattedValue = formattedValue.substring(0, formattedValue.length - 1);
+    }
+
+    // Remove trailing decimal point if exists
+    if (formattedValue.endsWith('.')) {
+      formattedValue = formattedValue.substring(0, formattedValue.length - 1);
+    }
+
+    return formattedValue;
+  }
+
   Future<void> _editOrder() async {
     final result = await Navigator.push(
       context,
@@ -217,8 +239,9 @@ class OrderDetailsPageState extends State<OrderDetailsPage> {
                   product['name'] ?? 'Unknown product',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
+                // In the product display section, modify how you display the quantity
                 trailing: Text(
-                  'Ποσ.: ${product['quantity']?.toStringAsFixed(2) ?? '0.00'}',
+                  'Ποσ.: ${_formatQuantity(double.tryParse(product['quantity'].toString()) ?? 0.0)}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),

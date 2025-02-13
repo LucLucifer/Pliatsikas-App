@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '/models/products.dart';
 import '/database/database_creation.dart';
 import 'package:intl/intl.dart';
@@ -35,6 +36,7 @@ class NewOrderPageState extends State<NewOrderPage> {
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final Map<String, TextEditingController> _controllers = {};
   DateTime? deliveryDate;
   late List<Product> _productsList;
   String? displayOrderId;
@@ -72,11 +74,45 @@ class NewOrderPageState extends State<NewOrderPage> {
                 (p) => p.name == existingProduct['name']
         );
         if (productIndex != -1) {
-          _productsList[productIndex].quantity =
-              double.parse(existingProduct['quantity'].toString());
+          _productsList[productIndex].quantity = _parseQuantity(
+              existingProduct['quantity']
+          );
         }
       }
     }
+
+    // Initialize controllers for each product
+    for (var product in _productsList) {
+      _controllers[product.id] = TextEditingController(
+          text: product.quantity > 0 ? product.quantity.toString() : ''
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    // Clean up controllers
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    customerNameController.dispose();
+    phoneController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
+
+  double _parseQuantity(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+    return 0.0;
   }
 
   Future<void> _initializeOrderId() async {
@@ -194,6 +230,43 @@ class NewOrderPageState extends State<NewOrderPage> {
     );
   }
 
+  List<Widget> _buildProductsList() {
+    return _productsList.map((product) {
+      return ListTile(
+        title: Text(product.name),
+        subtitle: Text('${product.price.toStringAsFixed(2)}€ / ${product.unit}'),
+        trailing: SizedBox(
+          width: 100,
+          child: TextField(
+            controller: _controllers[product.id],
+            decoration: const InputDecoration(
+              hintText: 'Ποσ.',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            onChanged: (value) {
+              if (value.isEmpty) {
+                setState(() => product.quantity = 0.0);
+                return;
+              }
+
+              try {
+                final double quantity = double.parse(value);
+                setState(() => product.quantity = quantity);
+              } catch (e) {
+                // Keep the previous value if parsing fails
+                _controllers[product.id]?.text = product.quantity.toString();
+              }
+            },
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,8 +318,7 @@ class NewOrderPageState extends State<NewOrderPage> {
             const SizedBox(height: 16.0),
             ListTile(
               title: const Text('Ημερομηνία Παράδοσης:'),
-              subtitle: Text((DateFormat('dd/MM/yyyy').format(deliveryDate!)),  //set default date current date for orders
-              ),
+              subtitle: Text(DateFormat('dd/MM/yyyy').format(deliveryDate!)),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _selectDate(context),
             ),
@@ -266,49 +338,6 @@ class NewOrderPageState extends State<NewOrderPage> {
         child: const Icon(Icons.check, size: 35.0),
       ),
     );
-  }
-
-  List<Widget> _buildProductsList() {
-    return _productsList.map((product) {
-      // Create a TextEditingController for each product
-      TextEditingController controller = TextEditingController();
-
-      // Set initial text if quantity exists
-      if (product.quantity > 0) {
-        controller.text = product.quantity.toString();
-      }
-
-      return ListTile(
-        title: Text(product.name),
-        subtitle: Text('${product.price.toStringAsFixed(2)}€ / ${product.unit}'),
-        trailing: SizedBox(
-          width: 100,
-          child: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              hintText: 'Ποσ.',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.text, // Changed to text for easier editing
-            onChanged: (value) {
-              setState(() {
-                if (value.isEmpty) {
-                  product.quantity = 0.0;
-                } else {
-                  // Remove any non-numeric characters except decimal point
-                  String cleanValue = value.replaceAll(RegExp(r'[^0-9.]'), '');
-                  try {
-                    product.quantity = double.parse(cleanValue);
-                  } catch (e) {
-                    product.quantity = 0.0;
-                  }
-                }
-              });
-            },
-          ),
-        ),
-      );
-    }).toList();
   }
 
   Future<void> _selectDate(BuildContext context) async {
