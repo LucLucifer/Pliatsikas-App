@@ -55,4 +55,6 @@ final List<Product> productsList = [
   Product(id: '26', name: 'Αυγά μεγάλο', price: 0.60 , unit: 'Τεμάχιο'),
   Product(id: '27', name: 'Αυγά μικρό', price: 0.40 , unit: 'Τεμάχιο'),
   Product(id: '28', name: 'Αυγά εξάδα', price: 2.40 , unit: 'Τεμάχιο'),
+  Product(id: '29', name: 'Καφέ Αυγά', price: 0.40 , unit: 'Τεμάχιο'),
+  Product(id: '30', name: 'Λευκά Αυγά', price: 0.40 , unit: 'Τεμάχιο'),
 ];
