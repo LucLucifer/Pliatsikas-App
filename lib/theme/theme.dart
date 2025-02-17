@@ -31,7 +31,6 @@ class AppTheme {
         color: Colors.black,
       ),
     ),
-    // Add other theme properties for consistency
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.teal,
       brightness: Brightness.light,
