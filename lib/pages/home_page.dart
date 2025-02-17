@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-//import '/pages/orders_date.dart';
-//import '/theme/theme.dart';
 
 //import buttons
 import '/buttons/add_order_button.dart';
@@ -24,7 +22,7 @@ class HomePage extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         centerTitle: true,
-        backgroundColor: AppConstants.primaryColor, // Move color to constants
+        backgroundColor: AppConstants.primaryColor, 
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,12 +52,12 @@ class HomePage extends StatelessWidget {
                   ),
                   Lottie.asset(
                     AppConstants.animationJson,
-                    // Consider adding width and height constraints
+                    // width and height constraints
                     width: 300,
                     height: 300,
                     fit: BoxFit.contain,
                   ),
-                  OrdersByDateButton(), // Move TextButton to separate widget
+                  OrdersByDateButton(), 
                 ],
               ),
 
